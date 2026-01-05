@@ -1,5 +1,6 @@
 <!DOCTYPE html>
 <html lang="ja">
+
 <head>
   <meta charset="UTF-8" />
   <title>画像ページ → PDF 生成</title>
@@ -14,93 +15,135 @@
 
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
-      background: #f5f5f5;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
+        sans-serif;
+      background: #111;
+      color: #eee;
       padding: 20px;
-    }
-
-    .container {
-      max-width: 640px;
+      max-width: 900px;
       margin: auto;
-      background: #fff;
-      padding: 20px;
-      border-radius: 8px;
-      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
     }
 
     h1 {
-      font-size: 20px;
-      margin-bottom: 16px;
+      font-size: 1.4rem;
+      margin-bottom: 10px;
+    }
+
+    section {
+      border: 1px solid #333;
+      padding: 15px;
+      margin-bottom: 20px;
+      border-radius: 6px;
+      background: #1a1a1a;
     }
 
     label {
-      font-size: 14px;
-      font-weight: bold;
       display: block;
-      margin-top: 12px;
-      margin-bottom: 4px;
+      margin-top: 10px;
+      font-size: 0.9rem;
+      color: #ccc;
     }
 
-    input {
+    input[type="text"],
+    input[type="number"] {
       width: 100%;
       padding: 8px;
-      font-size: 14px;
-      box-sizing: border-box;
+      margin-top: 5px;
+      background: #000;
+      border: 1px solid #444;
+      color: #fff;
+      border-radius: 4px;
+    }
+
+    input[type="file"] {
+      margin-top: 8px;
+      color: #ccc;
     }
 
     button {
-      margin-top: 16px;
-      width: 100%;
-      padding: 10px;
-      font-size: 16px;
+      margin-top: 10px;
+      margin-right: 10px;
+      padding: 8px 14px;
+      background: #2a2a2a;
+      border: 1px solid #555;
+      color: #fff;
+      border-radius: 4px;
       cursor: pointer;
     }
 
-    pre {
-      margin-top: 16px;
-      background: #111;
-      color: #0f0;
-      padding: 10px;
-      height: 200px;
-      overflow-y: auto;
-      font-size: 12px;
+    button:hover {
+      background: #3a3a3a;
     }
 
-    footer {
-      margin-top: 16px;
-      font-size: 12px;
-      color: #666;
-      text-align: center;
+    #status {
+      white-space: pre-wrap;
+      background: #000;
+      border: 1px solid #333;
+      padding: 10px;
+      height: 260px;
+      overflow-y: auto;
+      font-family: monospace;
+      font-size: 0.85rem;
+    }
+
+    .note {
+      font-size: 0.85rem;
+      color: #aaa;
+      margin-top: 5px;
     }
   </style>
 </head>
 
 <body>
-  <div class="container">
-    <h1>画像ページ → PDF生成</h1>
+  <h1>PDF生成</h1>
 
-    <label for="pageUrl">対象ページURL</label>
-    <input
-      id="pageUrl"
-      type="text"
-      placeholder="https://mga.com/fanzine/moXXXX/"
-    />
+  <!-- 単体URL -->
+  <section>
+    <h2>① 単一URLからPDF生成</h2>
 
-    <label for="maxPages">最大ページ数（連番探索）</label>
-    <input
-      id="maxPages"
-      type="number"
-      value="100"
-      min="1"
-    />
+    <label>
+      対象ページURL
+      <input type="text" id="pageUrl" placeholder="https://example.com/xxxxx" />
+    </label>
 
-    <button onclick="generatePdf()">PDFを生成してダウンロード</button>
+    <label>
+      最大ページ数（安全上限）
+      <input type="number" id="maxPages" value="100" min="1" />
+    </label>
 
-    <pre id="status">待機中…</pre>
+    <button onclick="generatePdf()">このURLをPDF化</button>
 
-    <footer>
-      GitHub Pages / クライアント完結 / サーバ不要
-    </footer>
-  </div>
+    <div class="note">
+      ※ 逐次取得・並列なし（Bot判定回避）
+    </div>
+  </section>
+
+
+  <!-- ブックマーク -->
+  <section>
+    <h2>② Brave / Chrome ブックマークから一括処理</h2>
+
+    <label>
+      ブックマークHTMLを選択
+      <input type="file" accept=".html" onchange="loadBookmarks(this.files[0])" />
+    </label>
+
+    <button onclick="startQueue()">▶ 開始</button>
+    <button onclick="pauseQueue()">⏸ 停止</button>
+    <button onclick="resumeQueue()">▶ 再開</button>
+
+    <div class="note">
+      ※ 「停止」は現在のPDF完了後に止まります<br>
+      ※ 再読み込み後も再開可能
+    </div>
+  </section>
+
+  <!-- ステータス -->
+  <section>
+    <h2>③ 実行ログ</h2>
+    <div id="status"></div>
+  </section>
+
 </body>
+
 </html>

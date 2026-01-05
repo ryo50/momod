@@ -1,8 +1,67 @@
-// ★ 自分の Cloudflare Workers URL に変更
 const PROXY_BASE = "https://momod-workers.ryo1119g.workers.dev/?url=";
 
-async function generatePdf() {
-  const pageUrl = document.getElementById("pageUrl").value.trim();
+
+// ==============================
+// キュー管理
+// ==============================
+let urlQueue = [];
+let isRunning = false;
+let totalCount = 0;
+const usedFilenames = new Map();
+let isPaused = false;
+let currentUrl = null;
+
+// ==============================
+// ブックマークHTML読込
+// ==============================
+async function loadBookmarks(file) {
+  const text = await file.text();
+  const doc = new DOMParser().parseFromString(text, "text/html");
+
+  urlQueue = [...doc.querySelectorAll("a")]
+    .map(a => a.href)
+    .filter(h => h.startsWith("https://"));
+
+  totalCount = urlQueue.length;
+  updateStatus(`URLを ${totalCount} 件読み込みました\n`);
+}
+
+// ==============================
+// キュー開始
+// ==============================
+async function startQueue() {
+  if (isRunning || urlQueue.length === 0) return;
+
+  isRunning = true;
+  let done = 0;
+
+  while (urlQueue.length > 0) {
+    const url = urlQueue.shift();
+    done++;
+
+    saveQueueState(); 
+
+    updateStatus(`\n==== ${done}/${totalCount} ====\n${url}\n`);
+    try {
+      await generatePdfSingle(url);
+    } catch (e) {
+      updateStatus(`失敗: ${e.message}\n`);
+    }
+
+    await sleep(2000); // Bot回避ウェイト
+  }
+
+  isRunning = false;
+  
+  if (isPaused) {
+    updateStatus("\n⏸ 停止中\n");
+  } else {
+    clearQueueState();
+    updateStatus("\n✅ すべて完了しました\n");
+  }
+}
+
+async function generatePdfSingle() {
   const maxPages = Number(document.getElementById("maxPages").value || 100);
   const status = document.getElementById("status");
 
@@ -44,13 +103,12 @@ async function generatePdf() {
     );
 
     if (!firstImage) {
-      status.textContent += "画像URLを検出できませんでした\n";
-      return;
+      throw new Error("画像URLを検出できませんでした");
     }
 
     // ③ ベースURL抽出
     const baseUrl = firstImage.replace(/\/\d+\.webp$/, "/");
-    status.textContent += `検出ベースURL:\n${baseUrl}\n\n`;
+    updateStatus(`ベースURL:\n${baseUrl}\n`);
     
     const h1 = doc.querySelector("h1");
     const title = sanitizeFilename(h1?.textContent || "untitled");
@@ -62,7 +120,7 @@ async function generatePdf() {
 
     for (let i = 1; i <= maxPages; i++) {
       const imgUrl = `${baseUrl}${i}.webp`;
-      status.textContent += `取得中 ${i}\n`;
+      updateStatus(`取得中 ${i}\n`);
 
       try {
         const res = await fetch(PROXY_BASE + encodeURIComponent(imgUrl));
@@ -86,22 +144,22 @@ async function generatePdf() {
 
         pageCount++;
         miss = 0;
+        await sleep(600); // Bot回避ウェイト
       } catch {
         miss++;
       }
     }
 
     if (pageCount === 0) {
-      status.textContent += "\n画像を取得できませんでした\n";
-      return;
+      throw new Error("画像を取得できませんでした");
     }
 
     const pdfBytes = await pdfDoc.save();
     download(pdfBytes, `${title}.pdf`);
-    status.textContent += `\n完了 (${pageCount}ページ)\n`;
+    updateStatus(`\n完了 (${pageCount}ページ)\n`);
 
   } catch (e) {
-    status.textContent += "\nエラー:\n" + e.message;
+    miss++;
   }
 }
 
@@ -136,3 +194,52 @@ function sanitizeFilename(filename) {
     .replace(/\s+/g, " ")
     .trim()
 }
+
+function updateStatus(text) {
+  document.getElementById("status").textContent += text;
+}
+
+function sleep(ms) {
+  return new Promise(r => setTimeout(r, ms));
+}
+
+function pauseQueue() {
+  isPaused = true;
+  updateStatus("\n⏸ 停止します（現在の処理が終わり次第）\n");
+  saveQueueState();
+}
+
+async function resumeQueue() {
+  if (isRunning) return;
+
+  loadQueueState();
+  isPaused = false;
+  updateStatus("\n▶ 再開します\n");
+  await startQueue();
+}
+
+function saveQueueState() {
+  localStorage.setItem("pdfQueue", JSON.stringify({
+    queue: urlQueue,
+    total: totalCount,
+    current: currentUrl
+  }));
+}
+
+function loadQueueState() {
+  const data = JSON.parse(localStorage.getItem("pdfQueue") || "{}");
+  if (data.queue) {
+    urlQueue = data.queue;
+    totalCount = data.total || data.queue.length;
+  }
+}
+
+function clearQueueState() {
+  localStorage.removeItem("pdfQueue");
+}
+
+window.addEventListener("load", () => {
+  if (localStorage.getItem("pdfQueue")) {
+    updateStatus("未完了のキューがあります。再開できます。\n");
+  }
+});
