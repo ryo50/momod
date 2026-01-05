@@ -2,42 +2,105 @@
 <html lang="ja">
 <head>
   <meta charset="UTF-8" />
-  <title>画像ページ → PDF</title>
+  <title>画像ページ → PDF 生成</title>
+
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+  <!-- pdf-lib -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+
+  <!-- メイン処理 -->
   <script defer src="script.js"></script>
+
   <style>
     body {
-      font-family: sans-serif;
+      font-family: system-ui, -apple-system, BlinkMacSystemFont, sans-serif;
+      background: #f5f5f5;
       padding: 20px;
-      max-width: 600px;
-      margin: auto;
     }
+
+    .container {
+      max-width: 640px;
+      margin: auto;
+      background: #fff;
+      padding: 20px;
+      border-radius: 8px;
+      box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+    }
+
+    h1 {
+      font-size: 20px;
+      margin-bottom: 16px;
+    }
+
+    label {
+      font-size: 14px;
+      font-weight: bold;
+      display: block;
+      margin-top: 12px;
+      margin-bottom: 4px;
+    }
+
     input {
       width: 100%;
       padding: 8px;
-      margin-bottom: 10px;
-    }
-    button {
-      padding: 10px;
-      width: 100%;
-      font-size: 16px;
-    }
-    #status {
-      margin-top: 10px;
-      white-space: pre-wrap;
       font-size: 14px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin-top: 16px;
+      width: 100%;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+
+    pre {
+      margin-top: 16px;
+      background: #111;
+      color: #0f0;
+      padding: 10px;
+      height: 200px;
+      overflow-y: auto;
+      font-size: 12px;
+    }
+
+    footer {
+      margin-top: 16px;
+      font-size: 12px;
+      color: #666;
+      text-align: center;
     }
   </style>
 </head>
+
 <body>
+  <div class="container">
+    <h1>画像ページ → PDF生成</h1>
 
-<h2>画像ページ → PDF</h2>
+    <label for="pageUrl">対象ページURL</label>
+    <input
+      id="pageUrl"
+      type="text"
+      placeholder="https://mga.com/fanzine/moXXXX/"
+    />
 
-<input id="urlInput" placeholder="画像一覧ページのURL" />
-<button onclick="generatePdf()">PDFを生成してダウンロード</button>
+    <label for="maxPages">最大ページ数（連番探索）</label>
+    <input
+      id="maxPages"
+      type="number"
+      value="100"
+      min="1"
+    />
 
-<div id="status"></div>
+    <button onclick="generatePdf()">PDFを生成してダウンロード</button>
 
+    <pre id="status">待機中…</pre>
+
+    <footer>
+      GitHub Pages / クライアント完結 / サーバ不要
+    </footer>
+  </div>
 </body>
 </html>
