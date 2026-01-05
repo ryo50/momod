@@ -34,13 +34,13 @@ async function generatePdf() {
     // script内の文字列も探索
     doc.querySelectorAll("script").forEach(s => {
       const matches = s.textContent.match(
-        /https:\/\/\d+\.mg\.com\/galleries\/[^\/]+\/\d+\.webp/g
+        /https:\/\/z\d+\.momon-ga\.com\/galleries\/[^\/]+\/\d+\.webp/g
       );
       matches?.forEach(m => candidates.add(m));
     });
 
     const firstImage = [...candidates].find(u =>
-      u.includes(".mg.com/galleries/") && u.endsWith(".webp")
+      u.includes(".momon-ga.com/galleries/") && u.endsWith(".webp")
     );
 
     if (!firstImage) {
