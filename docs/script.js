@@ -68,7 +68,7 @@ async function generatePdf() {
         const res = await fetch(PROXY_BASE + encodeURIComponent(imgUrl));
         if (!res.ok) {
           miss++;
-          if (miss >= 5) break;
+          if (miss >= 2) break;
           continue;
         }
 
