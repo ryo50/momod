@@ -62,7 +62,22 @@ async function startQueue() {
   }
 }
 
-async function generatePdfSingle() {
+async function generatePdfFromUrl() {
+  const pageUrl = document.getElementById("pageUrl").value.trim();
+
+  if (!pageUrl) {
+    updateStatus("URLを入力してください\n");
+    return;
+  }
+
+  try {
+    await generatePdfSingle(pageUrl);
+  } catch (e) {
+    updateStatus(`失敗: ${e.message}\n`);
+  }
+}
+
+async function generatePdfSingle(pageUrl) {
   const maxPages = Number(document.getElementById("maxPages").value || 100);
   const status = document.getElementById("status");
 
