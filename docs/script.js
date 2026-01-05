@@ -51,6 +51,9 @@ async function generatePdf() {
     // ③ ベースURL抽出
     const baseUrl = firstImage.replace(/\/\d+\.webp$/, "/");
     status.textContent += `検出ベースURL:\n${baseUrl}\n\n`;
+    
+    const h1 = doc.querySelector("h1");
+    const title = sanitizeFilename(h1?.textContent || "untitled");
 
     // ④ PDF生成
     const pdfDoc = await PDFLib.PDFDocument.create();
@@ -94,7 +97,7 @@ async function generatePdf() {
     }
 
     const pdfBytes = await pdfDoc.save();
-    download(pdfBytes, "images.pdf");
+    download(pdfBytes, `${title}.pdf`);
     status.textContent += `\n完了 (${pageCount}ページ)\n`;
 
   } catch (e) {
@@ -125,4 +128,11 @@ function download(bytes, filename) {
   a.href = URL.createObjectURL(blob);
   a.download = filename;
   a.click();
+}
+
+function sanitizeFilename(filename) {
+  return filename
+    .replace(/[\\/:*?"<>|]/g, "")
+    .replace(/\s+/g, " ")
+    .trim()
 }
