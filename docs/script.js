@@ -1,4 +1,5 @@
 const PROXY_BASE = "https://momod-workers.ryo1119g.workers.dev/?url=";
+const TARGET_DOMAIN = "momon-ga.com";
 
 
 // ==============================
@@ -20,7 +21,7 @@ async function loadBookmarks(file) {
 
   urlQueue = [...doc.querySelectorAll("a")]
     .map(a => a.href)
-    .filter(h => h.startsWith("https://"));
+    .filter(h => h.startsWith(`https://${TARGET_DOMAIN}`));
 
   totalCount = urlQueue.length;
   updateStatus(`URLを ${totalCount} 件読み込みました\n`);
