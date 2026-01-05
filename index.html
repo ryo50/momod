@@ -1,0 +1,43 @@
+<!DOCTYPE html>
+<html lang="ja">
+<head>
+  <meta charset="UTF-8" />
+  <title>画像ページ → PDF</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
+  <script defer src="script.js"></script>
+  <style>
+    body {
+      font-family: sans-serif;
+      padding: 20px;
+      max-width: 600px;
+      margin: auto;
+    }
+    input {
+      width: 100%;
+      padding: 8px;
+      margin-bottom: 10px;
+    }
+    button {
+      padding: 10px;
+      width: 100%;
+      font-size: 16px;
+    }
+    #status {
+      margin-top: 10px;
+      white-space: pre-wrap;
+      font-size: 14px;
+    }
+  </style>
+</head>
+<body>
+
+<h2>画像ページ → PDF</h2>
+
+<input id="urlInput" placeholder="画像一覧ページのURL" />
+<button onclick="generatePdf()">PDFを生成してダウンロード</button>
+
+<div id="status"></div>
+
+</body>
+</html>
