@@ -160,7 +160,7 @@ async function generatePdfSingle(pageUrl) {
 
         pageCount++;
         miss = 0;
-        await sleep(600); // Bot回避ウェイト
+        // await sleep(200); // Bot回避ウェイト
       } catch {
         miss++;
       }
@@ -259,3 +259,10 @@ window.addEventListener("load", () => {
     updateStatus("未完了のキューがあります。再開できます。\n");
   }
 });
+
+
+function clearPageUrl() {
+  const input = document.getElementById("pageUrl");
+  input.value = "";
+  input.focus();
+}

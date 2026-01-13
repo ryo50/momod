@@ -91,6 +91,35 @@
       color: #aaa;
       margin-top: 5px;
     }
+
+    .url-input-wrapper {
+      position: relative;
+      width: 100%;
+      max-width: 600px;
+    }
+
+    .url-input-wrapper input {
+      width: 100%;
+      padding-right: 2.2em;
+      /* ×の分 */
+      font-size: 16px;
+    }
+
+    .clear-btn {
+      position: absolute;
+      right: 0.5em;
+      top: 50%;
+      transform: translateY(-50%);
+      border: none;
+      background: transparent;
+      font-size: 18px;
+      cursor: pointer;
+      color: #888;
+    }
+
+    .clear-btn:hover {
+      color: #000;
+    }
   </style>
 </head>
 
@@ -103,7 +132,22 @@
 
     <label>
       対象ページURL
-      <input type="text" id="pageUrl" placeholder="https://example.com/xxxxx" />
+      <div class="url-input-wrapper">
+        <input
+          id="pageUrl"
+          type="text"
+          placeholder="https://example.com/xxxxx"
+          autocomplete="off"
+        />
+        <button
+          type="button"
+          class="clear-btn"
+          onclick="clearPageUrl()"
+          aria-label="URLをクリア"
+        >
+          ×
+        </button>
+      </div>
     </label>
 
     <label>
