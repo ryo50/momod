@@ -3,191 +3,116 @@
 
 <head>
   <meta charset="UTF-8" />
-  <title>画像ページ → PDF 生成</title>
-
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>momon-ga PDF Generator</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
 
   <!-- pdf-lib -->
   <script src="https://unpkg.com/pdf-lib/dist/pdf-lib.min.js"></script>
 
-  <!-- メイン処理 -->
-  <script defer src="script.js"></script>
-
   <style>
     body {
-      font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI",
-        sans-serif;
-      background: #111;
-      color: #eee;
-      padding: 20px;
-      max-width: 900px;
-      margin: auto;
+      font-family: system-ui, sans-serif;
+      margin: 16px;
     }
 
     h1 {
-      font-size: 1.4rem;
-      margin-bottom: 10px;
-    }
-
-    section {
-      border: 1px solid #333;
-      padding: 15px;
-      margin-bottom: 20px;
-      border-radius: 6px;
-      background: #1a1a1a;
-    }
-
-    label {
-      display: block;
-      margin-top: 10px;
-      font-size: 0.9rem;
-      color: #ccc;
-    }
-
-    input[type="text"],
-    input[type="number"] {
-      width: 100%;
-      padding: 8px;
-      margin-top: 5px;
-      background: #000;
-      border: 1px solid #444;
-      color: #fff;
-      border-radius: 4px;
-    }
-
-    input[type="file"] {
-      margin-top: 8px;
-      color: #ccc;
-    }
-
-    button {
-      margin-top: 10px;
-      margin-right: 10px;
-      padding: 8px 14px;
-      background: #2a2a2a;
-      border: 1px solid #555;
-      color: #fff;
-      border-radius: 4px;
-      cursor: pointer;
-    }
-
-    button:hover {
-      background: #3a3a3a;
-    }
-
-    #status {
-      white-space: pre-wrap;
-      background: #000;
-      border: 1px solid #333;
-      padding: 10px;
-      height: 260px;
-      overflow-y: auto;
-      font-family: monospace;
-      font-size: 0.85rem;
-    }
-
-    .note {
-      font-size: 0.85rem;
-      color: #aaa;
-      margin-top: 5px;
+      font-size: 1.2em;
     }
 
     .url-input-wrapper {
       position: relative;
       width: 100%;
-      max-width: 600px;
+      margin-bottom: 8px;
     }
 
-    .url-input-wrapper input {
+    #pageUrl {
       width: 100%;
-      padding-right: 2.2em;
-      /* ×の分 */
-      font-size: 16px;
+      padding: 8px 2.2em 8px 8px;
+      box-sizing: border-box;
     }
 
     .clear-btn {
       position: absolute;
-      right: 0.5em;
+      right: 0.4em;
       top: 50%;
       transform: translateY(-50%);
       border: none;
       background: transparent;
-      font-size: 18px;
+      font-size: 1.2em;
       cursor: pointer;
       color: #888;
+      display: none;
     }
 
     .clear-btn:hover {
       color: #000;
     }
+
+    textarea {
+      width: 100%;
+      height: 140px;
+      box-sizing: border-box;
+    }
+
+    button {
+      margin: 4px 4px 4px 0;
+      padding: 6px 10px;
+    }
+
+    #status {
+      white-space: pre-wrap;
+      font-size: 0.85em;
+      margin-top: 12px;
+      background: #f6f6f6;
+      padding: 8px;
+    }
   </style>
 </head>
 
 <body>
-  <h1>PDF生成</h1>
 
-  <!-- 単体URL -->
-  <section>
-    <h2>① 単一URLからPDF生成</h2>
+  <h1>momon-ga PDF Generator</h1>
 
-    <label>
-      対象ページURL
-      <div class="url-input-wrapper">
-        <input
-          id="pageUrl"
-          type="text"
-          placeholder="https://example.com/xxxxx"
-          autocomplete="off"
-        />
-        <button
-          type="button"
-          class="clear-btn"
-          onclick="clearPageUrl()"
-          aria-label="URLをクリア"
-        >
-          ×
-        </button>
-      </div>
-    </label>
+  <h2>単一URLからPDF生成</h2>
 
-    <label>
-      最大ページ数（安全上限）
-      <input type="number" id="maxPages" value="1000" min="1" />
-    </label>
+  <div class="url-input-wrapper">
+    <input type="text" id="pageUrl" placeholder="https://momon-ga.com/..." />
+    <button type="button" class="clear-btn" onclick="clearPageUrl()" aria-label="clear">×</button>
+  </div>
 
-    <button onclick="generatePdfFromUrl()">このURLをPDF化</button>
+  <label>
+    最大ページ数：
+    <input type="number" id="maxPages" value="1000" style="width:80px">
+  </label>
 
-    <div class="note">
-      ※ 逐次取得・並列なし（Bot判定回避）
-    </div>
-  </section>
+  <br><br>
 
+  <button onclick="generatePdf()">PDF生成</button>
 
-  <!-- ブックマーク -->
-  <section>
-    <h2>② Brave / Chrome ブックマークから一括処理</h2>
+  <hr>
 
-    <label>
-      ブックマークHTMLを選択
-      <input type="file" accept=".html" onchange="loadBookmarks(this.files[0])" />
-    </label>
+  <h3>大量ページ向けPDF生成（2段階方式）</h3>
+  <p style="font-size: 0.9em; color: #aaa;">
+    300ページ以上はこちら推奨（フリーズ対策）
+  </p>
 
-    <button onclick="startQueue()">▶ 開始</button>
-    <button onclick="pauseQueue()">⏸ 停止</button>
-    <button onclick="resumeQueue()">▶ 再開</button>
+  <button onclick="generatePdfChunk()">
+    2段階方式でPDF生成
+  </button>
 
-    <div class="note">
-      ※ 「停止」は現在のPDF完了後に止まります<br>
-      ※ 再読み込み後も再開可能
-    </div>
-  </section>
+  <h2>ブックマークHTML → キュー処理</h2>
 
-  <!-- ステータス -->
-  <section>
-    <h2>③ 実行ログ</h2>
-    <div id="status"></div>
-  </section>
+  <input type="file" id="bookmarkFile" accept=".html">
 
+  <br><br>
+
+  <button onclick="processQueue()">キュー開始</button>
+  <button onclick="pauseQueue()">一時停止</button>
+  <button onclick="clearGenerated()">生成済みリセット</button>
+
+  <div id="status"></div>
+
+  <script src="./script.js"></script>
 </body>
 
 </html>
