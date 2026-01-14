@@ -337,7 +337,7 @@ async function generatePdfChunked(pageUrl) {
 
   const h1 = doc.querySelector("h1");
   const title = sanitizeFilename(h1?.textContent || "untitled");
-  const CHUNK_SIZE = isAndroid() ? 25 : 40;
+  const CHUNK_SIZE = 40;
   const partialPdfs = [];
 
   let pageIndex = 1;
