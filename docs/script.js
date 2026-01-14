@@ -280,6 +280,21 @@ function buildQueueFromBookmarkHtml(html) {
    2段階方式（安定）
 ========================= */
 
+async function generatePdfChunk() {
+  const pageUrl = document.getElementById("pageUrl").value.trim();
+
+  if (!pageUrl) {
+    log("URLを入力してください\n");
+    return;
+  }
+
+  try {
+    await generatePdfChunked(pageUrl);
+  } catch (e) {
+    log(`失敗: ${e.message}`);
+  }
+}
+
 async function generatePdfChunked(pageUrl) {
   log("ページ解析中...");
 
